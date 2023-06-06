@@ -31,10 +31,11 @@ const createPost = async (req, res) => {
     }
 
     const contentWithAsterisk = await replaceWordsWithAsterisk(content);
+    const finalContent = await replacePostLink(contentWithAsterisk);
     const post = await Post.create({
       title,
       category: categoryInDb._id,
-      content: contentWithAsterisk,
+      content: finalContent,
       poster: userId,
     });
     res.status(201).json(post);
@@ -331,6 +332,26 @@ const calculateScore = (post) => {
   const t = (Date.now() - createdAt) / (1000 * 60 * 60);
   const score = (upvoteCount - downvoteCount - 1) / Math.pow(t + 2, 1.8);
   return score;
+};
+
+const replacePostLink = async (content) => {
+  const regex = /(^|\s)(#[0-9]+)(?=\s|$)/g;
+  const matches = content.match(regex);
+  if (matches) {
+    const resultArray = matches.map((match) => match.replace("#", "").trim());
+    const intArray = resultArray.map((str) => parseInt(str));
+    const posts = await Post.find({ postNumber: { $in: resultArray } });
+    if (posts.length > 0) {
+      const postNumberArrayInDb = posts.map((post) => post.postNumber);
+      const postNumberArrayToReplace = postNumberArrayInDb.filter(
+        (postNumber) => intArray.includes(postNumber)
+      );
+      if (postNumberArrayToReplace.length > 0) {
+
+      }
+    }
+  }
+  return content;
 };
 
 module.exports = {

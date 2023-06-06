@@ -1,10 +1,14 @@
 const mongoose = require("mongoose");
-const PostLike = require("./PostUpvote");
 const PostReport = require("./PostReport");
 const filter = require("../utils/filter");
+const PostUpvote = require("./PostUpvote");
+const PostDownvote = require("./PostDownvote");
 
 const PostSchema = new mongoose.Schema(
   {
+    postNumber: {
+      type: Number,
+    },
     poster: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
@@ -47,7 +51,11 @@ const PostSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-PostSchema.pre("save", function (next) {
+PostSchema.pre("save", async function (next) {
+  if (!this.postNumber) {
+    this.postNumber = await getNextPostOrder();
+  }
+
   if (this.title.length > 0) {
     this.title = filter.clean(this.title);
   }
@@ -59,9 +67,22 @@ PostSchema.pre("save", function (next) {
   next();
 });
 
+async function getNextPostOrder() {
+  const lastPost = await mongoose.model("post")
+    .findOne({}, {}, { sort: { postNumber: -1 } })
+    .lean();
+
+  if (lastPost) {
+    return lastPost.postNumber + 1;
+  } else {
+    return 1;
+  }
+}
+
 PostSchema.pre("remove", async function (next) {
-  await PostLike.deleteMany({ postId: this._id });
+  await PostUpvote.deleteMany({ postId: this._id });
   await PostReport.deleteMany({ postId: this._id });
+  await PostDownvote.deleteMany({ postId: this._id });
   next();
 });
 
