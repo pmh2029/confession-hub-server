@@ -347,11 +347,23 @@ const replacePostLink = async (content) => {
         (postNumber) => intArray.includes(postNumber)
       );
       if (postNumberArrayToReplace.length > 0) {
-
+        const postLinks = await Post.find({
+          postNumber: { $in: postNumberArrayToReplace },
+        });
+        postNumberArrayToReplace.forEach((postNumber) => {
+          const post = postLinks.find((p) => p.postNumber === postNumber);
+          if (post) {
+            const regexs = new RegExp(`#${postNumber}\\b`, "g");
+            const replacement = `[#${post.postNumber}](${post._id})`;
+            content = content.replace(regexs, replacement);
+          }
+        });
       }
     }
+    return content;
+  } else {
+    return content;
   }
-  return content;
 };
 
 module.exports = {
