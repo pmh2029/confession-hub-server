@@ -334,32 +334,6 @@ const calculateScore = (post) => {
   return score;
 };
 
-const replacePostLink = async (content) => {
-  const regex = /(^|\s)(#[0-9]+)(?=\s|$)/g;
-  const matches = content.match(regex);
-
-  if (!matches) {
-    return content;
-  }
-
-  const resultArray = matches.map((match) =>
-    parseInt(match.replace("#", "").trim())
-  );
-  const posts = await Post.find({ postNumber: { $in: resultArray } });
-
-  const postLinks = posts.filter((post) =>
-    resultArray.includes(post.postNumber)
-  );
-
-  postLinks.forEach((post) => {
-    const regexs = new RegExp(`#${post.postNumber}\\b`, "g");
-    const replacement = `[#${post.postNumber}](${post._id})`;
-    content = content.replace(regexs, replacement);
-  });
-
-  return content;
-};
-
 module.exports = {
   createPost,
   getPost,
