@@ -329,8 +329,11 @@ const setUpvoted = async (posts, userId) => {
 
 const calculateScore = (post) => {
   const { upvoteCount, downvoteCount, createdAt } = post;
-  const t = (Date.now() - createdAt) / (1000 * 60 * 60);
-  const score = (upvoteCount - downvoteCount - 1) / Math.pow(t + 2, 1.8);
+  const releaseDate = new Date("4/5/2023 00:00:00Z").getTime();
+  const seconds = (new Date(createdAt).getTime() - releaseDate) / 1000;
+  const s = Math.sign(upvoteCount - downvoteCount);
+  const n = Math.max(1, Math.abs(s));
+  const score = Math.log10(n) + (s * seconds) / 43200;
   return score;
 };
 
