@@ -4,7 +4,7 @@ const postControllers = require("../controllers/postControllers");
 const { verifyToken, optionallyVerifyToken } = require("../middleware/auth");
 
 router.get("/", optionallyVerifyToken, postControllers.getAllPosts);
-router.post("/", postControllers.createPost);
+router.post("/", verifyToken, postControllers.createPost);
 
 router.get("/:id", optionallyVerifyToken, postControllers.getPost);
 router.patch("/:id", verifyToken, postControllers.updatePost);

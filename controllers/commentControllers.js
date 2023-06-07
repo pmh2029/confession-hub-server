@@ -1,7 +1,8 @@
 const Comment = require("../models/Comment");
 const Post = require("../models/Post");
+const convertContent = require("../utils/convert");
+
 const cooldown = new Set();
-const replaceWordsWithAsterisk = require("../utils/nerAPI");
 
 const createComment = async (req, res) => {
   try {
@@ -25,9 +26,9 @@ const createComment = async (req, res) => {
       cooldown.delete(userId);
     }, 30000);
 
-    const contentWithAsterisk = await replaceWordsWithAsterisk(content);
+    const contentConverted = await convertContent(content);
     const comment = await Comment.create({
-      content: contentWithAsterisk,
+      content: contentConverted,
       parent: parentId,
       post: postId,
       commenter: userId,
@@ -115,8 +116,8 @@ const updateComment = async (req, res) => {
       throw new Error("Not authorized to update comment");
     }
 
-    const contentWithAsterisk = await replaceWordsWithAsterisk(content);
-    comment.content = contentWithAsterisk;
+    const contentConverted = await convertContent(content);
+    comment.content = contentConverted;
     comment.edited = true;
     await comment.save();
 

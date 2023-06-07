@@ -1,11 +1,12 @@
 const mongoose = require("mongoose");
+
 const Post = require("../models/Post");
 const Comment = require("../models/Comment");
 const PostUpvote = require("../models/PostUpvote");
 const PostDownvote = require("../models/PostDownvote");
 const PostReport = require("../models/PostReport");
-const replaceWordsWithAsterisk = require("../utils/nerAPI");
 const Category = require("../models/Category");
+const convertContent = require("../utils/convert");
 
 const cooldown = new Set();
 
@@ -30,12 +31,11 @@ const createPost = async (req, res) => {
       throw new Error("Category does not exist");
     }
 
-    const contentWithAsterisk = await replaceWordsWithAsterisk(content);
-    const finalContent = await replacePostLink(contentWithAsterisk);
+    const contentConverted = await convertContent(content);
     const post = await Post.create({
       title,
       category: categoryInDb._id,
-      content: finalContent,
+      content: contentConverted,
       poster: userId,
     });
     res.status(201).json(post);
@@ -83,11 +83,11 @@ const updatePost = async (req, res) => {
     if (!categoryInDb) {
       throw new Error("Category does not exist");
     }
-    const contentWithAsterisk = await replaceWordsWithAsterisk(content);
+    const contentConverted = await convertContent(content);
 
     post.title = title;
     post.category = categoryInDb._id;
-    post.content = contentWithAsterisk;
+    post.content = contentConverted;
     post.edited = true;
     await post.save();
     return res.json(post);
@@ -337,33 +337,27 @@ const calculateScore = (post) => {
 const replacePostLink = async (content) => {
   const regex = /(^|\s)(#[0-9]+)(?=\s|$)/g;
   const matches = content.match(regex);
-  if (matches) {
-    const resultArray = matches.map((match) => match.replace("#", "").trim());
-    const intArray = resultArray.map((str) => parseInt(str));
-    const posts = await Post.find({ postNumber: { $in: resultArray } });
-    if (posts.length > 0) {
-      const postNumberArrayInDb = posts.map((post) => post.postNumber);
-      const postNumberArrayToReplace = postNumberArrayInDb.filter(
-        (postNumber) => intArray.includes(postNumber)
-      );
-      if (postNumberArrayToReplace.length > 0) {
-        const postLinks = await Post.find({
-          postNumber: { $in: postNumberArrayToReplace },
-        });
-        postNumberArrayToReplace.forEach((postNumber) => {
-          const post = postLinks.find((p) => p.postNumber === postNumber);
-          if (post) {
-            const regexs = new RegExp(`#${postNumber}\\b`, "g");
-            const replacement = `[#${post.postNumber}](${post._id})`;
-            content = content.replace(regexs, replacement);
-          }
-        });
-      }
-    }
-    return content;
-  } else {
+
+  if (!matches) {
     return content;
   }
+
+  const resultArray = matches.map((match) =>
+    parseInt(match.replace("#", "").trim())
+  );
+  const posts = await Post.find({ postNumber: { $in: resultArray } });
+
+  const postLinks = posts.filter((post) =>
+    resultArray.includes(post.postNumber)
+  );
+
+  postLinks.forEach((post) => {
+    const regexs = new RegExp(`#${post.postNumber}\\b`, "g");
+    const replacement = `[#${post.postNumber}](${post._id})`;
+    content = content.replace(regexs, replacement);
+  });
+
+  return content;
 };
 
 module.exports = {
