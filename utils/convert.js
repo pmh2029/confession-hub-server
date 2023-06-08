@@ -2,19 +2,19 @@ const Post = require("../models/Post");
 
 const convertContent = async (content) => {
   // Replace post links
-  const regexPostLink = /(^|\s)(#[0-9]+)(?=\s|$)/g;
+  const regexPostLink = /(^|\s)(#cfs[0-9]+)(?=\s|$)/g;
   const postLinkMatches = content.match(regexPostLink);
   if (postLinkMatches) {
     const resultArray = postLinkMatches.map((match) =>
-      parseInt(match.replace("#", "").trim())
+      parseInt(match.replace("#cfs", "").trim())
     );
     const posts = await Post.find({ postNumber: { $in: resultArray } });
     const postLinks = posts.filter((post) =>
       resultArray.includes(post.postNumber)
     );
     postLinks.forEach((post) => {
-      const regex = new RegExp(`#${post.postNumber}\\b`, "g");
-      const replacement = `[#${post.postNumber}](${post._id})`;
+      const regex = new RegExp(`#cfs${post.postNumber}\\b`, "g");
+      const replacement = `[#cfs${post.postNumber}](${process.env.CLIENT_URL}/posts/${post._id})`;
       content = content.replace(regex, replacement);
     });
   }

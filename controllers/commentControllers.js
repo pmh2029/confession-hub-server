@@ -142,7 +142,7 @@ const deleteComment = async (req, res) => {
       throw new Error("Not authorized to delete comment");
     }
 
-    await comment.remove();
+    await comment.deleteOne();
 
     const post = await Post.findById(comment.post);
 

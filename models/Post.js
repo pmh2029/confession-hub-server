@@ -68,7 +68,8 @@ PostSchema.pre("save", async function (next) {
 });
 
 async function getNextPostOrder() {
-  const lastPost = await mongoose.model("post")
+  const lastPost = await mongoose
+    .model("post")
     .findOne({}, {}, { sort: { postNumber: -1 } })
     .lean();
 
@@ -79,7 +80,7 @@ async function getNextPostOrder() {
   }
 }
 
-PostSchema.pre("remove", async function (next) {
+PostSchema.pre("deleteOne", { document: true }, async function (next) {
   await PostUpvote.deleteMany({ postId: this._id });
   await PostReport.deleteMany({ postId: this._id });
   await PostDownvote.deleteMany({ postId: this._id });

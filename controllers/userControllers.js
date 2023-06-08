@@ -134,7 +134,7 @@ const unfollow = async (req, res) => {
       throw new Error("Not already following user");
     }
 
-    await existingFollow.remove();
+    await existingFollow.deleteOne();
 
     return res.status(200).json({ data: existingFollow });
   } catch (err) {

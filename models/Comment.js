@@ -35,12 +35,12 @@ const CommentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-CommentSchema.post("remove", async function (next) {
+CommentSchema.post("deleteOne", { document: true }, async function (next) {
   const comments = await this.model("comment").find({ parent: this._id });
 
   for (let i = 0; i < comments.length; i++) {
     const comment = comments[i];
-    await comment.remove();
+    await comment.deleteOne();
   }
 
   next();

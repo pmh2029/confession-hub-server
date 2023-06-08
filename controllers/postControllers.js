@@ -38,7 +38,7 @@ const createPost = async (req, res) => {
       content: contentConverted,
       poster: userId,
     });
-    res.status(201).json(post);
+    return res.status(201).json(post);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -107,7 +107,7 @@ const deletePost = async (req, res) => {
     if (post.poster != userId && !isAdmin) {
       throw new Error("Not authorized to delete post");
     }
-    await post.remove();
+    await post.deleteOne();
     await Comment.deleteMany({ post: post._id });
     return res.json(post);
   } catch (err) {
@@ -214,7 +214,7 @@ const unUpvotePost = async (req, res) => {
     if (!existingPostUpvote) {
       throw new Error("Post is already not liked");
     }
-    await existingPostUpvote.remove();
+    await existingPostUpvote.deleteOne();
     post.upvoteCount = (await PostUpvote.find({ postId })).length;
     await post.save();
     return res.json({ success: true });
@@ -259,7 +259,7 @@ const unDownvotePost = async (req, res) => {
     if (!existingPostDownvote) {
       throw new Error("Post is already not liked");
     }
-    await existingPostDownvote.remove();
+    await existingPostDownvote.deleteOne();
     post.downvoteCount = (await PostDownvote.find({ postId })).length;
     await post.save();
     return res.json({ success: true });
@@ -304,7 +304,7 @@ const unReportPost = async (req, res) => {
     if (!existingPostReport) {
       throw new Error("Post is already not reported");
     }
-    await existingPostReport.remove();
+    await existingPostReport.deleteOne();
     post.reportCount = (await PostReport.find({ postId })).length;
     await post.save();
     return res.json({ success: true });

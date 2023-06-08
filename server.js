@@ -8,6 +8,7 @@ const posts = require("./routes/posts");
 const users = require("./routes/users");
 const comments = require("./routes/comments");
 const messages = require("./routes/messages");
+const categories = require("./routes/categories");
 
 dotenv.config();
 
@@ -41,3 +42,4 @@ app.use("/api/posts", posts);
 app.use("/api/users", users);
 app.use("/api/comments", comments);
 app.use("/api/messages", messages);
+app.use("/api/categories", categories);
