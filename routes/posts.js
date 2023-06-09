@@ -16,6 +16,7 @@ router.post("/downvote/:id", verifyToken, postControllers.downvotePost);
 router.delete("/downvote/:id", verifyToken, postControllers.unDownvotePost);
 router.post("/report/:id", verifyToken, postControllers.reportPost);
 router.delete("/report/:id", verifyToken, postControllers.unReportPost);
+router.get("/categories/:id", verifyToken, postControllers.getPostByCategory);
 
 router.get(
   "/upvoted/:id",

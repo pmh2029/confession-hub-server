@@ -180,17 +180,17 @@ const getUser = async (req, res) => {
       .populate("poster")
       .sort("-createdAt");
 
-    let likeCount = 0;
+    let upvoteCount = 0;
 
     posts.forEach((post) => {
-      likeCount += post.likeCount;
+      upvoteCount += post.upvoteCount;
     });
 
     const data = {
       user,
       posts: {
         count: posts.length,
-        likeCount,
+        upvoteCount,
         data: posts,
       },
     };

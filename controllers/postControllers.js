@@ -6,6 +6,7 @@ const PostUpvote = require("../models/PostUpvote");
 const PostDownvote = require("../models/PostDownvote");
 const PostReport = require("../models/PostReport");
 const Category = require("../models/Category");
+const paginate = require("../utils/paginate");
 const convertContent = require("../utils/convert");
 
 const cooldown = new Set();
@@ -58,7 +59,8 @@ const getPost = async (req, res) => {
       throw new Error("Post does not exist");
     }
     if (userId) {
-      await setLiked([post], userId);
+      await setUpvoted([post], userId);
+      await setDownvoted([post], userId);
     }
     return res.json(post);
   } catch (err) {
@@ -118,12 +120,12 @@ const deletePost = async (req, res) => {
 
 const getUserUpvotedPosts = async (req, res) => {
   try {
-    const upvoteId = req.params.id;
+    const upvoterId = req.params.id;
     const { userId } = req.body;
     let { page, sortBy } = req.query;
     if (!sortBy) sortBy = "-createdAt";
     if (!page) page = 1;
-    let posts = await PostUpvote.find({ userId: upvoteId })
+    let posts = await PostUpvote.find({ userId: upvoterId })
       .sort(sortBy)
       .populate({ path: "postId", populate: { path: "poster" } })
       .lean();
@@ -170,7 +172,8 @@ const getAllPosts = async (req, res) => {
     const count = posts.length;
     posts = paginate(posts, 10, page);
     if (userId) {
-      await setLiked(posts, userId);
+      await setUpvoted(posts, userId);
+      await setDownvoted(posts, userId);
     }
     return res.json({ data: posts, count });
   } catch (err) {
@@ -313,14 +316,51 @@ const unReportPost = async (req, res) => {
   }
 };
 
+const getPostByCategory = async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+    const { userId } = req.body;
+    console.log(categoryId);
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      throw new Error("Category does not exist");
+    }
+
+    const posts = await Post.find({ category: categoryId })
+      .populate("poster", "-password")
+      .lean();
+    if (userId) {
+      await setUpvoted(posts, userId);
+      await setDownvoted(posts, userId);
+    }
+    return res.json(posts);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+};
+
 const setUpvoted = async (posts, userId) => {
   let searchCondition = {};
   if (userId) searchCondition = { userId };
-  const userPostUpvotes = await PostLike.find(searchCondition); //userId needed
+  const userPostUpvotes = await PostUpvote.find(searchCondition); //userId needed
   posts.forEach((post) => {
     userPostUpvotes.forEach((userPostUpvote) => {
       if (userPostUpvote.postId.equals(post._id)) {
         post.upvoted = true;
+        return;
+      }
+    });
+  });
+};
+
+const setDownvoted = async (posts, userId) => {
+  let searchCondition = {};
+  if (userId) searchCondition = { userId };
+  const userPostDownvotes = await PostDownvote.find(searchCondition); //userId needed
+  posts.forEach((post) => {
+    userPostDownvotes.forEach((userPostDownvote) => {
+      if (userPostDownvote.postId.equals(post._id)) {
+        post.downvoted = true;
         return;
       }
     });
@@ -350,4 +390,5 @@ module.exports = {
   unDownvotePost,
   reportPost,
   unReportPost,
+  getPostByCategory,
 };
