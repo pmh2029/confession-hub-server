@@ -54,6 +54,7 @@ const getPost = async (req, res) => {
     }
     const post = await Post.findById(postId)
       .populate("poster", "-password")
+      .populate("category")
       .lean();
     if (!post) {
       throw new Error("Post does not exist");
@@ -153,6 +154,7 @@ const getAllPosts = async (req, res) => {
     if (!page) page = 1;
     let posts = await Post.find()
       .populate("poster", "-password")
+      .populate("category")
       .sort(sortBy)
       .lean();
     if (author) {
@@ -328,12 +330,13 @@ const getPostByCategory = async (req, res) => {
 
     const posts = await Post.find({ category: categoryId })
       .populate("poster", "-password")
+      .populate("category")
       .lean();
     if (userId) {
       await setUpvoted(posts, userId);
       await setDownvoted(posts, userId);
     }
-    return res.json(posts);
+    return res.json({ posts, count: posts.length });
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }

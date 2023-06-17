@@ -1,4 +1,5 @@
 const Category = require("../models/Category");
+const Post = require("../models/Post");
 
 const getCategory = async (req, res) => {
   try {
@@ -16,7 +17,15 @@ const getCategory = async (req, res) => {
 const getAllCategories = async (_req, res) => {
   try {
     const categories = await Category.find();
-    return res.status(200).json(categories);
+
+    const categoriesWithPostCount = await Promise.all(
+      categories.map(async (category) => {
+        const postCount = await Post.countDocuments({ category: category._id });
+        return { ...category.toJSON(), postCount };
+      })
+    );
+
+    return res.status(200).json(categoriesWithPostCount);
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
