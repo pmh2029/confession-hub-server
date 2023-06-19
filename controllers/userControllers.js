@@ -227,6 +227,39 @@ const getRandomUsers = async (req, res) => {
   }
 };
 
+const adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!(email && password)) {
+      throw new Error("All input required");
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw new Error("Email or password incorrect");
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new Error("Email or password incorrect");
+    }
+
+    if (!user.isAdmin) {
+      throw new Error("User is not admin");
+    }
+
+    const token = jwt.sign(buildToken(user), process.env.TOKEN_KEY);
+
+    return res.json(getUserDict(token, user));
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({ error: err.message });
+  }
+};
+
 const getRandomIndices = (size, sourceSize) => {
   const randomIndices = [];
   while (randomIndices.length < size) {
@@ -248,4 +281,5 @@ module.exports = {
   getUser,
   getRandomUsers,
   updateUser,
+  adminLogin,
 };
