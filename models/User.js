@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { isEmail, contains } = require("validator");
 const filter = require("../utils/filter");
+const Post = require("./Post");
 
 const UserSchema = new mongoose.Schema(
   {
@@ -49,6 +50,17 @@ UserSchema.pre("save", function (next) {
   }
 
   next();
+});
+
+UserSchema.pre("deleteOne", { document: true }, async function (next) {
+  const userID = this._id;
+
+  try {
+    await Post.deleteMany({ poster: userID });
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
 module.exports = mongoose.model("user", UserSchema);

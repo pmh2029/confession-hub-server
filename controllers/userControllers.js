@@ -260,6 +260,53 @@ const adminLogin = async (req, res) => {
   }
 };
 
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.aggregate([
+      {
+        $lookup: {
+          from: "posts",
+          localField: "_id",
+          foreignField: "poster",
+          as: "posts",
+        },
+      },
+      {
+        $project: {
+          username: true,
+          email: true,
+          isAdmin: true,
+          postCount: { $size: "$posts" },
+        },
+      },
+      {
+        $match: {
+          isAdmin: { $ne: true },
+        },
+      },
+    ]).exec();
+    return res.status(200).json(users);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  try {
+    const userID = req.params.id;
+
+    const user = await User.findById(userID);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    await user.deleteOne();
+    return res.status(200).json({ message: "User deleted" });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
 const getRandomIndices = (size, sourceSize) => {
   const randomIndices = [];
   while (randomIndices.length < size) {
@@ -282,4 +329,6 @@ module.exports = {
   getRandomUsers,
   updateUser,
   adminLogin,
+  getAllUsers,
+  deleteUser,
 };

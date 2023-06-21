@@ -61,6 +61,7 @@ const getPost = async (req, res) => {
     }
     if (userId) {
       await setUpvoted([post], userId);
+      await setReported([post], userId);
       await setDownvoted([post], userId);
     }
     return res.json(post);
@@ -92,6 +93,7 @@ const updatePost = async (req, res) => {
     post.category = categoryInDb._id;
     post.content = contentConverted;
     post.edited = true;
+    post.editedAt = new Date();
     await post.save();
     return res.json(post);
   } catch (err) {
@@ -176,6 +178,7 @@ const getAllPosts = async (req, res) => {
     if (userId) {
       await setUpvoted(posts, userId);
       await setDownvoted(posts, userId);
+      await setReported(posts, userId);
     }
     return res.json({ data: posts, count });
   } catch (err) {
@@ -335,6 +338,7 @@ const getPostByCategory = async (req, res) => {
     if (userId) {
       await setUpvoted(posts, userId);
       await setDownvoted(posts, userId);
+      await setReported(posts, userId);
     }
     return res.json({ posts, count: posts.length });
   } catch (err) {
@@ -364,6 +368,20 @@ const setDownvoted = async (posts, userId) => {
     userPostDownvotes.forEach((userPostDownvote) => {
       if (userPostDownvote.postId.equals(post._id)) {
         post.downvoted = true;
+        return;
+      }
+    });
+  });
+};
+
+const setReported = async (posts, userId) => {
+  let searchCondition = {};
+  if (userId) searchCondition = { userId };
+  const userPostReports = await PostReport.find(searchCondition); //userId needed
+  posts.forEach((post) => {
+    userPostReports.forEach((userPortReport) => {
+      if (userPortReport.postId.equals(post._id)) {
+        post.reported = true;
         return;
       }
     });

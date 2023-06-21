@@ -31,6 +31,9 @@ const CommentSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    editedAt: {
+      type: Date,
+    }
   },
   { timestamps: true }
 );

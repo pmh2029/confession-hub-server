@@ -119,6 +119,7 @@ const updateComment = async (req, res) => {
     const contentConverted = await convertContent(content);
     comment.content = contentConverted;
     comment.edited = true;
+    comment.editedAt = new Date();
     await comment.save();
 
     return res.status(200).json(comment);
