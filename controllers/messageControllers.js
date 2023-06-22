@@ -83,7 +83,7 @@ const getConversations = async (req, res) => {
       const conversation = conversations[i];
       for (let j = 0; j < 2; j++) {
         if (conversation.recipients[j]._id != userId) {
-          conversation.recipients = conversation.recipients[j];
+          conversation.recipient = conversation.recipients[j];
         }
       }
     }
