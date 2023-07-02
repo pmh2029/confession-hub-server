@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const { isEmail, contains } = require("validator");
 const filter = require("../utils/filter");
 const Post = require("./Post");
+const Comment = require("./Comment");
 
 const UserSchema = new mongoose.Schema(
   {
@@ -56,7 +57,24 @@ UserSchema.pre("deleteOne", { document: true }, async function (next) {
   const userID = this._id;
 
   try {
+
+    const postIDs = await Comment.distinct("post", { commenter: userID });
+    for (const postID of postIDs) {
+      const commentCount = await Comment.countDocuments({
+        post: postID,
+        commenter: userID,
+      });
+      await Post.findByIdAndUpdate(postID, {
+        $inc: { commentCount: -commentCount },
+      });
+    }
+    
     await Post.deleteMany({ poster: userID });
+    const commentIDs = await Comment.distinct("_id", { commenter: userID });
+    await Comment.deleteMany({
+      $or: [{ _id: { $in: commentIDs } }, { parent: { $in: commentIDs } }],
+    });
+
     next();
   } catch (error) {
     next(error);

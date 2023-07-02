@@ -2,7 +2,6 @@ const Comment = require("../models/Comment");
 const Post = require("../models/Post");
 const convertContent = require("../utils/convert");
 
-const cooldown = new Set();
 
 const createComment = async (req, res) => {
   try {
@@ -14,17 +13,6 @@ const createComment = async (req, res) => {
     if (!post) {
       throw new Error("Post not found");
     }
-
-    if (cooldown.has(userId)) {
-      throw new Error(
-        "You are commenting too frequently. Please try again shortly."
-      );
-    }
-
-    cooldown.add(userId);
-    setTimeout(() => {
-      cooldown.delete(userId);
-    }, 30000);
 
     const contentConverted = await convertContent(content);
     const comment = await Comment.create({
