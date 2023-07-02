@@ -15,7 +15,7 @@ const convertContent = async (content) => {
     );
     postLinks.forEach((post) => {
       const regex = new RegExp(`#cfs${post.postNumber}\\b`, "g");
-      const replacement = `[#cfs${post.postNumber}](http://${process.env.CLIENT_URL}/posts/${post._id})`;
+      const replacement = `[#cfs${post.postNumber}](${process.env.CLIENT_URL}/posts/${post._id})`;
       content = content.replace(regex, replacement);
     });
   }

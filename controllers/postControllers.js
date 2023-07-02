@@ -9,23 +9,12 @@ const Category = require("../models/Category");
 const paginate = require("../utils/paginate");
 const convertContent = require("../utils/convert");
 
-const cooldown = new Set();
-
 const createPost = async (req, res) => {
   try {
     const { title, category, content, userId } = req.body;
     if (!(title && category && content)) {
       throw new Error("All input required");
     }
-    if (cooldown.has(userId)) {
-      throw new Error(
-        "You are posting too frequently. Please try again shortly."
-      );
-    }
-    cooldown.add(userId);
-    setTimeout(() => {
-      cooldown.delete(userId);
-    }, 60000);
 
     const categoryInDb = await Category.findOne({ categoryName: category });
     if (!categoryInDb) {
