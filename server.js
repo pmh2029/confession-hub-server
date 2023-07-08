@@ -10,6 +10,7 @@ const comments = require("./routes/comments");
 const messages = require("./routes/messages");
 const categories = require("./routes/categories");
 const admin = require("./routes/admin");
+const notifications = require("./routes/notifications");
 
 dotenv.config();
 
@@ -48,3 +49,4 @@ app.use("/api/comments", comments);
 app.use("/api/messages", messages);
 app.use("/api/categories", categories);
 app.use("/api/admin", admin);
+app.use("/api/notifications", notifications);
