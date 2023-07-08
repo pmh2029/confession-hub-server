@@ -20,6 +20,8 @@ const convertContent = async (content) => {
     });
   }
 
+  console.log(content);
+
   // Replace words with asterisks
   const nerBody = { sentence: content };
   const nerOutput = await fetch("https://viettelgroup.ai/nlp/api/v1/ner", {

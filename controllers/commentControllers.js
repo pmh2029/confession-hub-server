@@ -1,7 +1,7 @@
 const Comment = require("../models/Comment");
+const Notification = require("../models/Notification");
 const Post = require("../models/Post");
 const convertContent = require("../utils/convert");
-
 
 const createComment = async (req, res) => {
   try {
@@ -21,6 +21,28 @@ const createComment = async (req, res) => {
       post: postId,
       commenter: userId,
     });
+
+    if (!parentId) {
+      await Notification.create({
+        postId: postId,
+        postNumber: post.postNumber,
+        userId: userId,
+        owner: post.poster,
+        actionType: "comment",
+        commentId: comment._id,
+      });
+    }
+    if (parentId) {
+      const replyToComment = await Comment.findById(parentId);
+      await Notification.create({
+        postId: postId,
+        postNumber: post.postNumber,
+        userId: comment.commenter,
+        owner: replyToComment.commenter,
+        actionType: "reply",
+        commentId: parentId,
+      });
+    }
 
     post.commentCount += 1;
 

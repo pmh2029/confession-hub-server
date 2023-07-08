@@ -8,6 +8,7 @@ const PostReport = require("../models/PostReport");
 const Category = require("../models/Category");
 const paginate = require("../utils/paginate");
 const convertContent = require("../utils/convert");
+const Notification = require("../models/Notification");
 
 const createPost = async (req, res) => {
   try {
@@ -191,6 +192,14 @@ const upvotePost = async (req, res) => {
       postId,
       userId,
     });
+
+    await Notification.create({
+      postId: postId,
+      postNumber: post.postNumber,
+      owner: post.poster,
+      userId: userId,
+      actionType: "upvote",
+    });
     post.upvoteCount = (await PostUpvote.find({ postId })).length;
     await post.save();
     return res.json({ success: true });
@@ -235,6 +244,14 @@ const downvotePost = async (req, res) => {
     await PostDownvote.create({
       postId,
       userId,
+    });
+
+    await Notification.create({
+      postId: postId,
+      postNumber: post.postNumber,
+      owner: post.poster,
+      userId: userId,
+      actionType: "downvote",
     });
     post.downvoteCount = (await PostDownvote.find({ postId })).length;
     await post.save();

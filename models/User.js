@@ -55,9 +55,7 @@ UserSchema.pre("save", function (next) {
 
 UserSchema.pre("deleteOne", { document: true }, async function (next) {
   const userID = this._id;
-
   try {
-
     const postIDs = await Comment.distinct("post", { commenter: userID });
     for (const postID of postIDs) {
       const commentCount = await Comment.countDocuments({

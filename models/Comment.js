@@ -60,27 +60,6 @@ CommentSchema.pre("deleteOne", { document: true }, async function (next) {
   next();
 });
 
-// CommentSchema.post("deleteOne", { document: true }, async function (next) {
-//   const userID = this.commenter;
-
-//   try {
-//     // Truy vấn số lượng comment của người dùng
-//     const commentCount = await this.model("comment").countDocuments({
-//       commenter: userID,
-//     });
-
-//     // Cập nhật commentCount trong Post
-//     await this.model("post").findOneAndUpdate(
-//       { _id: this.post },
-//       { $inc: { commentCount: -commentCount } }
-//     );
-
-//     next();
-//   } catch (error) {
-//     next(error);
-//   }
-// });
-
 CommentSchema.pre("save", function (next) {
   if (this.content.length > 0) {
     this.content = filter.clean(this.content);
