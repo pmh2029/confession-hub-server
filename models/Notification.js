@@ -22,12 +22,16 @@ const NotificationSchema = new mongoose.Schema(
     },
     actionType: {
       type: String,
-      enum: ["upvote", "comment", "downvote"],
+      enum: ["upvote", "comment", "downvote", "reply"],
       required: true,
     },
     read: {
       type: Boolean,
       default: false,
+    },
+    postNumber: {
+      type: Number,
+      required: true,
     },
   },
   { timestamps: true }

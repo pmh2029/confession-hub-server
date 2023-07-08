@@ -195,6 +195,7 @@ const upvotePost = async (req, res) => {
 
     await Notification.create({
       postId: postId,
+      postNumber: post.postNumber,
       owner: post.poster,
       userId: userId,
       actionType: "upvote",
@@ -243,6 +244,14 @@ const downvotePost = async (req, res) => {
     await PostDownvote.create({
       postId,
       userId,
+    });
+
+    await Notification.create({
+      postId: postId,
+      postNumber: post.postNumber,
+      owner: post.poster,
+      userId: userId,
+      actionType: "downvote",
     });
     post.downvoteCount = (await PostDownvote.find({ postId })).length;
     await post.save();
