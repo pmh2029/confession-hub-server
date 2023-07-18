@@ -22,7 +22,12 @@ const createPost = async (req, res) => {
       throw new Error("Category does not exist");
     }
 
-    const contentConverted = await convertContent(content);
+    let contentConverted = await convertContent(content);
+    contentConverted =
+      `![Image](${
+        categoryInDb.url[Math.floor(Math.random() * categoryInDb.url.length)]
+      })\n\n` + contentConverted;
+
     const post = await Post.create({
       title,
       category: categoryInDb._id,
@@ -141,14 +146,20 @@ const getUserUpvotedPosts = async (req, res) => {
 const getAllPosts = async (req, res) => {
   try {
     const { userId } = req.body;
-    let { page, sortBy, author, search } = req.query;
+    let { page, sortBy, author, search, categoryId } = req.query;
     if (!sortBy) sortBy = "-createdAt";
     if (!page) page = 1;
-    let posts = await Post.find()
+    let query = Post.find()
       .populate("poster", "-password")
       .populate("category")
-      .sort(sortBy)
-      .lean();
+      .sort(sortBy);
+
+    if (categoryId) {
+      query = query.where("category").equals(categoryId);
+    }
+
+    let posts = await query.lean();
+
     if (author) {
       posts = posts.filter((post) => post.poster.username == author);
     }
