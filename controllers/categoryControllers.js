@@ -33,9 +33,9 @@ const getAllCategories = async (_req, res) => {
 
 const createCategory = async (req, res) => {
   try {
-    const { categoryName } = req.body;
+    const { categoryName, url } = req.body;
 
-    if (!categoryName) {
+    if (!categoryName || !url) {
       throw new Error("Input required");
     }
 
@@ -46,6 +46,7 @@ const createCategory = async (req, res) => {
 
     const category = await Category.create({
       categoryName,
+      url,
     });
 
     return res.status(201).json(category);
@@ -57,14 +58,19 @@ const createCategory = async (req, res) => {
 const updateCategory = async (req, res) => {
   try {
     const categoryId = req.params.id;
-    const { categoryName } = req.body;
+    const { categoryName, url } = req.body;
 
     const category = await Category.findById(categoryId);
     if (!category) {
       return res.status(404).json({ error: "Category not found" });
     }
 
-    category.categoryName = categoryName;
+    if (categoryName) {
+      category.categoryName = categoryName;
+    }
+    if (url) {
+      category.url = url;
+    }
     await category.save();
     return res.status(200).json(category);
   } catch (error) {
