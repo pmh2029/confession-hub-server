@@ -62,6 +62,7 @@ const getPostComments = async (req, res) => {
 
     const comments = await Comment.find({ post: postId })
       .populate("commenter", "-password")
+      .populate("post")
       .sort("-createdAt");
 
     let commentParents = {};
