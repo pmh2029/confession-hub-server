@@ -21,6 +21,7 @@ const createPost = async (req, res) => {
     if (!categoryInDb) {
       throw new Error("Category does not exist");
     }
+    let convertedTitle = await convertContent(title);
 
     let contentConverted = await convertContent(content);
     contentConverted =
@@ -29,7 +30,7 @@ const createPost = async (req, res) => {
       })\n\n` + contentConverted;
 
     const post = await Post.create({
-      title,
+      title: convertedTitle,
       category: categoryInDb._id,
       content: contentConverted,
       poster: userId,
@@ -82,9 +83,10 @@ const updatePost = async (req, res) => {
     if (!categoryInDb) {
       throw new Error("Category does not exist");
     }
+    let titleConverted = await convertContent(title);
     const contentConverted = await convertContent(content);
 
-    post.title = title;
+    post.title = titleConverted;
     post.category = categoryInDb._id;
     post.content = contentConverted;
     post.edited = true;
