@@ -3,6 +3,9 @@ const { isEmail, contains } = require("validator");
 const filter = require("../utils/filter");
 const Post = require("./Post");
 const Comment = require("./Comment");
+const Notification = require("./Notification");
+const Conversation = require("./Conversation");
+const Message = require("./Message");
 
 const UserSchema = new mongoose.Schema(
   {
@@ -66,12 +69,23 @@ UserSchema.pre("deleteOne", { document: true }, async function (next) {
         $inc: { commentCount: -commentCount },
       });
     }
-    
+
     await Post.deleteMany({ poster: userID });
     const commentIDs = await Comment.distinct("_id", { commenter: userID });
     await Comment.deleteMany({
       $or: [{ _id: { $in: commentIDs } }, { parent: { $in: commentIDs } }],
     });
+
+    await Notification.deleteMany({
+      $or: [{ userId: userID }, { owner: userID }],
+    });
+
+    await Conversation.updateMany(
+      { recipients: userID },
+      { $pull: { recipients: userID } }
+    );
+
+    await Message.deleteMany({ sender: userID });
 
     next();
   } catch (error) {
