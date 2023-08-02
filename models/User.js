@@ -6,6 +6,8 @@ const Comment = require("./Comment");
 const Notification = require("./Notification");
 const Conversation = require("./Conversation");
 const Message = require("./Message");
+const PostUpvote = require("./PostUpvote");
+const PostDownvote = require("./PostDownvote");
 
 const UserSchema = new mongoose.Schema(
   {
@@ -86,7 +88,8 @@ UserSchema.pre("deleteOne", { document: true }, async function (next) {
     );
 
     await Message.deleteMany({ sender: userID });
-
+    await PostUpvote.deleteMany({ userId: userID });
+    await PostDownvote.deleteMany({ userId: userID });
     next();
   } catch (error) {
     next(error);
