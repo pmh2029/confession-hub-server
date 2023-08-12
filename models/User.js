@@ -82,12 +82,12 @@ UserSchema.pre("deleteOne", { document: true }, async function (next) {
       $or: [{ userId: userID }, { owner: userID }],
     });
 
-    await Conversation.updateMany(
-      { recipients: userID },
-      { $pull: { recipients: userID } }
-    );
+    // await Conversation.updateMany(
+    //   { recipients: userID },
+    //   { $pull: { recipients: userID } }
+    // );
 
-    await Message.deleteMany({ sender: userID });
+    // await Message.deleteMany({ sender: userID });
     await PostUpvote.deleteMany({ userId: userID });
     await PostDownvote.deleteMany({ userId: userID });
     next();
